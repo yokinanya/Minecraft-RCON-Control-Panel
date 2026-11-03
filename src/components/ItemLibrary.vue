@@ -122,6 +122,7 @@ import { computed, defineComponent, ref, PropType } from 'vue';
 import { allCategories, allItems } from '../data/allData';
 import type { ItemEntry } from '../types';
 import { t, locale } from '../i18n';
+import { apiUrl } from '../api';
 
 interface CustomGroup {
   mod: string;
@@ -212,7 +213,7 @@ export default defineComponent({
       const validRows = newRows.value.filter(r => r.id.trim() && r.name.trim());
       if (validRows.length === 0) { formError.value = t('addItems.emptyWarn'); return; }
       try {
-        const res = await fetch('/mcrcon/api/custom-items', {
+        const res = await fetch(apiUrl('/api/custom-items'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ mod: newModName.value.trim(), items: validRows }),
@@ -229,13 +230,18 @@ export default defineComponent({
     const deleteGroup = async (mod: string) => {
       if (!confirm(t('items.confirmDelete', { mod }))) return;
       try {
-        await fetch('/mcrcon/api/custom-items', {
+        const res = await fetch(apiUrl('/api/custom-items'), {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ mod }),
         });
+        const data = await res.json().catch(() => ({}));
+        // 后台已删除但列表刷新失败时仍同步刷新，以便暴露真实状态
         emit('refresh-custom');
-      } catch { /* ignore */ }
+        if (!res.ok) throw new Error(data.error || 'Delete failed');
+      } catch (err) {
+        formError.value = (err as Error).message;
+      }
     };
 
     return {

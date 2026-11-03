@@ -1,5 +1,4 @@
 # Minecraft RCON Control Panel
-[在线体验，注意服务器要有公网 IP！](https://cherrylanterns.cn/mcrcon/) <br>
 基于 Web 的 Minecraft 服务器远程管理控制台，通过 RCON 协议连接服务器，提供图形化的命令管理界面。
 
 ## 功能
@@ -51,6 +50,7 @@ npm start
 ## 项目结构
 
 ```
+├── start.sh               # 一键构建并启动（端口 / 子路径配置）
 ├── server.js              # Express 后端 & RCON 连接管理
 ├── src/
 │   ├── main.ts            # Vue 入口
@@ -65,9 +65,14 @@ npm start
 │       └── CommandInput.vue      # 命令输入 & 自动补全
 ├── public/                # 静态资源
 ├── index.html             # HTML 入口
-├── vite.config.ts         # Vite 配置
+├── src/api.ts             # 带基路径的请求封装（子路径部署）
+├── vite.config.ts         # Vite 配置（base / 代理 / PORT）
 └── tailwind.config.js     # Tailwind 配置
 ```
+
+## 仓库
+
+<https://github.com/yokinanya/Minecraft-RCON-Control-Panel>
 
 ## License
 

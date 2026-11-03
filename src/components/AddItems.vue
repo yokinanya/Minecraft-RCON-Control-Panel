@@ -66,6 +66,7 @@
 <script lang="ts">
 import { defineComponent, ref, reactive } from 'vue';
 import { t } from '../i18n';
+import { apiUrl } from '../api';
 
 interface RowData { id: string; name: string }
 
@@ -103,7 +104,7 @@ export default defineComponent({
         return;
       }
       try {
-        const res = await fetch('/mcrcon/api/custom-items', {
+        const res = await fetch(apiUrl('/api/custom-items'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ mod: modName.value.trim(), items: validRows }),

@@ -117,6 +117,7 @@ import CommandLibrary from './components/CommandLibrary.vue';
 import CommandDetailModal from './components/CommandDetailModal.vue';
 import CommandInput from './components/CommandInput.vue';
 import ItemLibrary from './components/ItemLibrary.vue';
+import { request } from './api';
 
 interface PlayerInfo {
   total: number;
@@ -174,15 +175,6 @@ export default {
     const addLog = (text: string, type: LogEntry['type'] = 'info') => {
       logs.value.push({ text, type, time: timeStr() });
       if (logs.value.length > 200) logs.value.shift();
-    };
-
-    const request = async (path: string, options: RequestInit = {}) => {
-      const response = await fetch(path, options);
-      if (!response.ok) {
-        const body = await response.json().catch(() => ({}));
-        throw new Error(body.error || response.statusText || '请求失败');
-      }
-      return response.json();
     };
 
     const fetchCustomItems = async () => {

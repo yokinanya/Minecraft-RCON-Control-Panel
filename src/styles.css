@@ -21,8 +21,9 @@ body {
 }
 
 /* ── Background ── */
+/* 背景图可选：data/custom/background.png 存在时才由 main.ts 设置 --app-bg 并启用 */
 .app-background {
-  background-image: url('/assets/res/image.png');
+  background-image: var(--app-bg, none);
   background-size: cover;
   background-position: center;
   background-attachment: fixed;

@@ -4,15 +4,22 @@ const path = require('path');
 const { Rcon } = require('rcon-client');
 
 const app = express();
-const port = process.env.PORT || 7000;
+const port = Number(process.env.PORT) || 7000;
+// 部署子路径，如 BASE_PATH=mcrcon → 访问 /mcrcon/api/...，需与构建时的 BASE_PATH 一致
+const basePath = `/${(process.env.BASE_PATH || '').trim().replace(/^\/+|\/+$/g, '')}`.replace(/^\/$/, '');
+const api = `${basePath}/api`;
+const distDir = path.join(__dirname, 'dist');
+// 自定义背景图不随仓库分发，放在此处；缺失时前端自动回退为纯色主题
+const customDir = path.join(__dirname, 'data', 'custom');
 
 let rcon = null;
 let connectionInfo = null;
 let closingRcon = false;
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'dist')));
-app.use('/mcrcon', express.static(path.join(__dirname, 'dist')));
+app.use(express.static(distDir));
+if (basePath) app.use(basePath, express.static(distDir));
+app.use('/assets/custom', express.static(customDir, { fallthrough: true }));
 
 async function closeRcon() {
   if (!rcon || closingRcon) return;
@@ -119,7 +126,7 @@ function parseMods(raw) {
   return mods.length > 0 ? mods : null;
 }
 
-app.post('/mcrcon/api/connect', async (req, res) => {
+app.post([`${api}/connect`, `/api/connect`], async (req, res) => {
   const { host, port: portValue, password } = req.body;
   if (!host || !portValue || !password) {
     return res.status(400).json({ error: 'host、port、password 都不能为空' });
@@ -148,7 +155,7 @@ app.post('/mcrcon/api/connect', async (req, res) => {
   }
 });
 
-app.post('/mcrcon/api/command', async (req, res) => {
+app.post([`${api}/command`, `/api/command`], async (req, res) => {
   const { command } = req.body;
   if (!rcon) {
     return res.status(400).json({ error: '尚未连接 RCON' });
@@ -165,7 +172,7 @@ app.post('/mcrcon/api/command', async (req, res) => {
   }
 });
 
-app.post('/mcrcon/api/disconnect', async (req, res) => {
+app.post([`${api}/disconnect`, `/api/disconnect`], async (req, res) => {
   if (!rcon) {
     return res.status(400).json({ error: '当前没有连接' });
   }
@@ -178,7 +185,7 @@ app.post('/mcrcon/api/disconnect', async (req, res) => {
   }
 });
 
-app.get('/mcrcon/api/server-info', async (req, res) => {
+app.get([`${api}/server-info`, `/api/server-info`], async (req, res) => {
   if (!rcon) {
     return res.status(400).json({ error: '未连接 RCON' });
   }
@@ -259,7 +266,7 @@ function writeGroups(groups) {
   fs.writeFileSync(CUSTOM_ITEMS_PATH, JSON.stringify(groups, null, 2), 'utf-8');
 }
 
-app.get('/mcrcon/api/custom-items', (req, res) => {
+app.get([`${api}/custom-items`, `/api/custom-items`], (req, res) => {
   try {
     res.json({ ok: true, groups: readGroups() });
   } catch (error) {
@@ -267,7 +274,7 @@ app.get('/mcrcon/api/custom-items', (req, res) => {
   }
 });
 
-app.post('/mcrcon/api/custom-items', (req, res) => {
+app.post([`${api}/custom-items`, `/api/custom-items`], (req, res) => {
   const { mod, items } = req.body;
   if (!mod || !mod.trim()) {
     return res.status(400).json({ error: 'Mod 名称不能为空' });
@@ -294,7 +301,7 @@ app.post('/mcrcon/api/custom-items', (req, res) => {
   }
 });
 
-app.delete('/mcrcon/api/custom-items', (req, res) => {
+app.delete([`${api}/custom-items`, `/api/custom-items`], (req, res) => {
   const { mod } = req.body;
   if (!mod) return res.status(400).json({ error: 'Mod 名称不能为空' });
   try {
@@ -307,19 +314,22 @@ app.delete('/mcrcon/api/custom-items', (req, res) => {
   }
 });
 
-// SPA fallback: serve index.html for root and /mcrcon routes
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
-app.get('/mcrcon', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
-app.get('/mcrcon/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+// SPA fallback：无后缀路径一律返回前端入口（子路径部署时由反向代理决定是否保留前缀）
+const sendIndex = (req, res) => res.sendFile(path.join(distDir, 'index.html'));
+
+app.get('/', sendIndex);
+if (basePath) {
+  app.get(basePath, sendIndex);
+}
+// 兜底：反代剥离子路径前缀后也能返回页面；带后缀的静态资源缺失时直接 404，避免回退成 HTML
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  if (req.path.startsWith('/api') || path.extname(req.path)) return next();
+  return sendIndex(req, res);
 });
 
 const server = app.listen(port, '0.0.0.0', () => {
-  console.log(`Server listening on http://0.0.0.0:${port}`);
+  console.log(`Server listening on http://0.0.0.0:${port}${basePath || '/'}`);
 });
 
 server.on('error', (error) => {

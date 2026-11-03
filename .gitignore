@@ -36,3 +36,6 @@ data/custom-items.json
 
 # Claude Code
 CLAUDE.md
+# 自定义背景图（不随仓库分发）
+public/assets/res/image.png
+data/custom/
