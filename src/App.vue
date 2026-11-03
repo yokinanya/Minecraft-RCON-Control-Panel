@@ -179,7 +179,7 @@ export default {
 
     const fetchCustomItems = async () => {
       try {
-        const result = await request('/mcrcon/api/custom-items');
+        const result = await request('/api/custom-items');
         customGroups.value = result.groups || [];
       } catch { customGroups.value = []; }
     };
@@ -187,7 +187,7 @@ export default {
     const login = async () => {
       message.value = '';
       try {
-        const result = await request('/mcrcon/api/connect', {
+        const result = await request('/api/connect', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ host: host.value, port: port.value, password: password.value }),
@@ -212,7 +212,7 @@ export default {
     const refreshInfo = async () => {
       if (!connected.value) return;
       try {
-        const result = await request('/mcrcon/api/server-info');
+        const result = await request('/api/server-info');
         info.value = {
           ...info.value,
           version: result.version,
@@ -231,7 +231,7 @@ export default {
       const cmd = raw.trim().replace(/^\/+/, '');
       if (!cmd) return;
       try {
-        const result = await request('/mcrcon/api/command', {
+        const result = await request('/api/command', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ command: cmd }),
@@ -247,7 +247,7 @@ export default {
 
     const disconnect = async () => {
       try {
-        await request('/mcrcon/api/disconnect', { method: 'POST' });
+        await request('/api/disconnect', { method: 'POST' });
         connected.value = false;
         addLog(t('console.disconnected'), 'info');
         info.value = {};
