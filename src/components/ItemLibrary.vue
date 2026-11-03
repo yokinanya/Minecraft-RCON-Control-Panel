@@ -1,13 +1,13 @@
 <template>
-  <div class="flex flex-col h-full">
+  <div class="item-library flex h-full min-h-0 flex-col overflow-hidden">
     <!-- Section Tabs: Vanilla / Custom -->
-    <div class="flex items-center gap-2 mb-3">
+    <div class="flex shrink-0 items-center gap-2 px-5 pt-4 pb-3">
       <button @click="section = 'vanilla'" :class="['rounded-lg px-3 py-1.5 text-xs font-medium transition', section === 'vanilla' ? 'bg-cyan-500/15 text-cyan-300' : 'text-slate-500 hover:text-slate-300']">{{ t('items.vanilla') }}</button>
       <button @click="section = 'custom'" :class="['rounded-lg px-3 py-1.5 text-xs font-medium transition', section === 'custom' ? 'bg-cyan-500/15 text-cyan-300' : 'text-slate-500 hover:text-slate-300']">{{ t('items.custom') }} <span class="text-[10px] opacity-60">({{ customGroups.length }})</span></button>
     </div>
 
     <!-- Search -->
-    <div class="relative mb-4">
+    <div class="relative mx-5 mb-3 shrink-0">
       <input
         v-model="searchQuery"
         type="text"
@@ -19,7 +19,7 @@
     </div>
 
     <!-- Content -->
-    <div class="flex-1 overflow-y-auto">
+    <div class="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
       <!-- ===== VANILLA ===== -->
       <template v-if="section === 'vanilla'">
         <template v-if="searchQuery">
@@ -256,6 +256,9 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.item-library ::-webkit-scrollbar { width: 5px; }
+.item-library ::-webkit-scrollbar-track { background: transparent; }
+.item-library ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.12); border-radius: 3px; }
 .toast-enter-active, .toast-leave-active { transition: all 0.25s ease; }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translate(-50%, 8px); }
 </style>

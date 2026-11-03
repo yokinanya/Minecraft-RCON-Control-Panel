@@ -20,6 +20,11 @@ body {
   box-sizing: border-box;
 }
 
+html,
+body {
+  height: 100%;
+}
+
 /* ── Background ── */
 /* 背景图可选：data/custom/background.png 存在时才由 main.ts 设置 --app-bg 并启用 */
 .app-background {

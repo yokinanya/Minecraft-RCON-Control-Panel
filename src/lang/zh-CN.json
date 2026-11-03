@@ -3,7 +3,6 @@
   "nav.items": "📦 物品栏",
   "nav.addItems": "➕ 添加物品",
   "status.online": "● 在线",
-
   "login.title": "Minecraft RCON",
   "login.subtitle": "远程服务器管理控制台",
   "login.host": "服务器地址",
@@ -12,10 +11,10 @@
   "login.portPlaceholder": "25575",
   "login.password": "RCON 密码",
   "login.passwordPlaceholder": "请输入 RCON 密码",
+  "login.remember": "记住连接信息",
   "login.connect": "连接服务器",
   "login.success": "连接成功",
   "login.fail": "连接失败",
-
   "serverInfo.title": "服务器信息",
   "serverInfo.online": "在线",
   "serverInfo.players": "在线玩家",
@@ -28,7 +27,6 @@
   "serverInfo.mods": "已加载 Mod",
   "serverInfo.noMods": "未检测到 Mod",
   "serverInfo.playerList": "玩家列表",
-
   "console.cmdFmt": "> {cmd}",
   "console.entries": "条记录",
   "console.clear": "清空",
@@ -42,11 +40,9 @@
   "console.disconnected": "已断开 RCON 连接",
   "console.disconnFail": "断开失败",
   "console.infoRefreshed": "已刷新服务器信息。",
-
   "cmdLibrary.title": "命令库",
   "cmdLibrary.search": "搜索命令...",
   "cmdLibrary.noMatch": "没有匹配的命令",
-
   "cmdDetail.permission": "权限等级",
   "cmdDetail.syntax": "语法",
   "cmdDetail.params": "参数",
@@ -54,23 +50,20 @@
   "cmdDetail.insert": "插入命令",
   "cmdDetail.optional": "可选",
   "cmdDetail.close": "关闭",
-
   "cmdInput.placeholder": "输入命令，支持 MC 风格自动补全...",
   "cmdInput.execute": "执行",
   "cmdInput.disconnect": "断开连接",
   "cmdInput.paramHint": "参数建议",
   "cmdInput.cmdHint": "命令建议",
-
   "items.vanilla": "原版内容",
   "items.custom": "自定义物品",
-  "items.noCustom": "暂无自定义物品，请在「添加物品」页面添加",
+  "items.noCustom": "暂无自定义物品，点击上方按钮添加",
   "items.searchPlaceholder": "搜索 ID 或名称...",
   "items.id": "ID",
   "items.name": "名称",
   "items.idPlaceholder": "item_id",
   "items.noResults": "没有找到匹配的物品",
   "items.count": "{count} 项",
-
   "addItems.title": "添加自定义物品",
   "addItems.modName": "Mod 名称",
   "addItems.modNamePlaceholder": "输入 Mod 名称...",
@@ -84,18 +77,12 @@
   "addItems.saveFail": "保存失败",
   "addItems.duplicateMod": "该 Mod 名称已存在，请使用不同的名称",
   "addItems.emptyWarn": "请填写 Mod 名称和至少一个物品",
-
-  "items.vanilla": "原版内容",
-  "items.custom": "自定义物品",
   "items.addGroup": "添加物品组",
   "items.modName": "Mod 名称",
   "items.modNamePlaceholder": "输入 Mod 名称，不可重名...",
-  "items.noCustom": "暂无自定义物品，点击上方按钮添加",
   "items.addRow": "添加行",
   "items.save": "保存",
   "items.cancel": "取消",
   "items.confirmDelete": "确定要删除 {mod} 及其所有物品吗？",
-  "items.searchPlaceholder": "搜索 ID 或名称...",
-
   "language.label": "语言"
 }

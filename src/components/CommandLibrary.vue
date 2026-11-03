@@ -1,6 +1,6 @@
 <template>
-  <div class="library-panel flex flex-col rounded-2xl border border-slate-700/60 bg-slate-900/70 backdrop-blur-xl shadow-xl shadow-slate-950/20 h-full">
-    <div class="px-5 py-3.5 border-b border-slate-700/40">
+  <div class="library-panel flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-900/70 backdrop-blur-xl shadow-xl shadow-slate-950/20">
+    <div class="shrink-0 border-b border-slate-700/40 px-5 py-3.5">
       <h2 class="flex items-center gap-2 text-base font-semibold text-slate-100">
         <span class="text-cyan-400">📋</span> {{ t('cmdLibrary.title') }}
         <span class="ml-auto text-[11px] text-slate-500">{{ totalCount }} 条</span>
@@ -16,7 +16,7 @@
       </div>
     </div>
 
-    <div class="flex-1 overflow-y-auto px-3 py-3">
+    <div class="min-h-0 flex-1 overflow-y-auto px-3 py-3">
       <template v-if="filteredCategories.length === 0">
         <p class="py-8 text-center text-xs text-slate-600">{{ t('cmdLibrary.noMatch') }}</p>
       </template>

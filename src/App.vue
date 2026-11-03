@@ -1,8 +1,12 @@
 <template>
   <div class="app-background min-h-screen text-slate-100">
-    <div class="mx-auto flex min-h-screen max-w-[1600px] flex-col gap-4 px-4 py-4 lg:px-6">
+    <!-- 已连接时锁定视口高度，由各面板内部滚动，避免展开列表把整页拉长 -->
+    <div
+      class="mx-auto flex max-w-[1600px] flex-col gap-4 px-4 py-4 lg:px-6"
+      :class="connected ? 'app-shell h-screen overflow-hidden' : 'min-h-screen'"
+    >
       <!-- ── Header / Nav ── -->
-      <header v-if="connected" class="rounded-2xl border border-slate-700/60 bg-slate-900/70 px-5 py-2.5 backdrop-blur-xl shadow-xl shadow-slate-950/20">
+      <header v-if="connected" class="shrink-0 rounded-2xl border border-slate-700/60 bg-slate-900/70 px-5 py-2.5 backdrop-blur-xl shadow-xl shadow-slate-950/20">
         <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex items-center gap-4">
             <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-cyan-500/10 text-lg">
@@ -57,6 +61,10 @@
                 <span class="font-medium">{{ t('login.password') }}</span>
                 <input v-model="password" type="password" :placeholder="t('login.passwordPlaceholder')" class="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20" required />
               </label>
+              <label class="flex items-center gap-2 text-xs text-slate-400 select-none">
+                <input v-model="remember" type="checkbox" class="h-3.5 w-3.5 rounded border-slate-600 bg-slate-950 accent-cyan-500" />
+                {{ t('login.remember') }}
+              </label>
               <button class="w-full rounded-xl bg-cyan-500/90 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 active:scale-[0.99]">{{ t('login.connect') }}</button>
             </form>
             <p v-if="message" class="mt-4 rounded-xl px-4 py-3 text-sm" :class="messageType === 'error' ? 'bg-rose-500/10 text-rose-300 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'">{{ message }}</p>
@@ -66,14 +74,12 @@
 
       <!-- ── Console Tab ── -->
       <template v-if="connected && activeTab === 'console'">
-        <div class="grid flex-1 gap-4 lg:grid-cols-[300px_1fr_300px]">
-          <div class="flex flex-col gap-4">
-            <ServerInfoPanel :info="info" />
-          </div>
-          <ConsolePanel :logs="logs" @refresh="refreshInfo" @clear="logs = []" />
-          <CommandLibrary @select-command="openCommandDetail" />
+        <div class="grid min-h-0 flex-1 gap-4 lg:grid-cols-[300px_1fr_300px]">
+          <ServerInfoPanel :info="info" class="min-h-0" />
+          <ConsolePanel :logs="logs" class="min-h-0" @refresh="refreshInfo" @clear="logs = []" />
+          <CommandLibrary class="min-h-0" @select-command="openCommandDetail" />
         </div>
-        <div class="sticky bottom-0 pb-2">
+        <div class="shrink-0 pb-2">
           <CommandInput ref="commandInputRef" :commands="commandItems" @send="sendCommand" @disconnect="disconnect" />
         </div>
         <CommandDetailModal :command="detailCommand" @close="detailCommand = null" @insert="insertCommand" />
@@ -81,10 +87,10 @@
 
       <!-- ── Items Tab ── -->
       <template v-if="connected && activeTab === 'items'">
-        <div class="flex-1 rounded-2xl border border-slate-700/60 bg-slate-900/70 p-5 backdrop-blur-xl shadow-xl shadow-slate-950/20">
+        <div class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-900/70 backdrop-blur-xl shadow-xl shadow-slate-950/20">
           <ItemLibrary :custom-groups="customGroups" @insert-item="insertItem" @refresh-custom="fetchCustomItems" />
         </div>
-        <div class="sticky bottom-0 pb-2">
+        <div class="shrink-0 pb-2">
           <CommandInput ref="commandInputRef" :commands="commandItems" @send="sendCommand" @disconnect="disconnect" />
         </div>
       </template>
@@ -118,6 +124,7 @@ import CommandDetailModal from './components/CommandDetailModal.vue';
 import CommandInput from './components/CommandInput.vue';
 import ItemLibrary from './components/ItemLibrary.vue';
 import { request } from './api';
+import { loadConnection, saveConnection } from './storage';
 
 interface PlayerInfo {
   total: number;
@@ -140,8 +147,10 @@ export default {
   components: { ServerInfoPanel, ConsolePanel, CommandLibrary, CommandDetailModal, CommandInput, ItemLibrary },
   setup() {
     const connected = ref(false);
-    const host = ref('');
-    const port = ref(25575);
+    const saved = loadConnection();
+    const host = ref(saved?.host || '');
+    const port = ref(saved?.port || 25575);
+    const remember = ref(saved?.remember ?? true);
     const password = ref('');
     const message = ref('');
     const messageType = ref<'info' | 'error'>('info');
@@ -177,6 +186,11 @@ export default {
       if (logs.value.length > 200) logs.value.shift();
     };
 
+    watch(remember, (val) => {
+      if (val) saveConnection({ host: host.value, port: Number(port.value), remember: true });
+      else saveConnection(null);
+    });
+
     const fetchCustomItems = async () => {
       try {
         const result = await request('/api/custom-items');
@@ -194,6 +208,7 @@ export default {
         });
         connected.value = true;
         info.value = { host: host.value, port: port.value };
+        saveConnection({ host: host.value, port: Number(port.value), remember: remember.value });
         addLog(t('console.connected', { host: host.value, port: String(port.value) }), 'info');
         message.value = t('login.success');
         messageType.value = 'info';
@@ -280,7 +295,7 @@ export default {
     };
 
     return {
-      connected, host, port, password, message, messageType,
+      connected, host, port, password, remember, message, messageType,
       logs, info, detailCommand, commandInputRef, commandItems, activeTab, customGroups,
       login, refreshInfo, sendCommand, disconnect,
       openCommandDetail, insertCommand, insertItem, fetchCustomItems,

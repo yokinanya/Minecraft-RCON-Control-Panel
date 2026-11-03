@@ -81,6 +81,57 @@ async function tryCommand(cmd) {
   }
 }
 
+/**
+ * 从 /version 等输出中提取精简版本号，去掉服务端类型前缀
+ * 例："This server is running CraftBukkit version 1.20.4 ..." → "1.20.4"
+ *     "Paper 1.21.1 (MC: 1.21.1)" → "1.21.1"；"Server version: 1.21.1" → "1.21.1"
+ * 无法确认时返回 null（宁可不显示，也不要显示玩家数之类的无关文本）
+ */
+function parseVersion(raw) {
+  if (!raw || isErrorResponse(raw)) return null;
+
+  // 先匹配明确的版本标识，避免把 "There are 0 of a max of 10 players" 误识别为版本
+  const patterns = [
+    /\bversion[:\s]+(\d+\.\d+(?:\.\d+)?)/i,
+    /\(MC:\s*(\d+\.\d+(?:\.\d+)?)\)/i,
+    /\b(?:Paper|Purpur|Spigot|CraftBukkit|Bukkit|Fabric|Forge|NeoForge|Mohist|Arclight|Pufferfish|Velocity|BungeeCord)\D{0,20}?(\d+\.\d+(?:\.\d+)?)/i,
+  ];
+  for (const pattern of patterns) {
+    const match = raw.match(pattern);
+    if (match) return match[1];
+  }
+
+  // 不像版本输出的内容（如 "There are 0 of a max of 10 players online:"）一律视为未知
+  return null;
+}
+
+/**
+ * 从 Forge /forge mods 输出（或任意含 jar 文件名的文本）推断 Minecraft 版本
+ * Forge 生态的 jar 名形如 "clumps-forge-1.20.1-12.0.0.4.jar"、"structure-1.20.x_v1.35.jar"
+ * 取所有文件名的版本段中最常见的 (主.次) 组合，避免单个异常文件名误导
+ */
+function parseVersionFromModFiles(raw) {
+  if (!raw || isErrorResponse(raw)) return null;
+
+  const counts = new Map();
+  const filePattern = /([\w.+-]+\.jar)/gi;
+  for (const [, fileName] of raw.matchAll(filePattern) || []) {
+    // 形如 clumps-forge-1.20.1-12.0.0.4.jar / jei-1.21.1-forge-19.19.0.jar / structure-1.20.x_v1.35.jar
+    const match = fileName.match(/(?:^|[-+_mc])(1\.\d+)(\.\d+)?(?=[-.+_]|$)/);
+    if (!match) continue;
+    // 只有主.次（如 1.20.1 里的 "1.20"）可能是模组自身版本，权重减半
+    const weight = match[2] ? 2 : 1;
+    const version = `${match[1]}${match[2] || ''}`;
+    counts.set(version, (counts.get(version) || 0) + weight);
+  }
+
+  let best = null;
+  for (const [version, count] of counts) {
+    if (!best || count > best.count) best = { version, count };
+  }
+  return best ? best.version : null;
+}
+
 /** 尝试解析 TPS（Paper/Spigot 服务端） */
 function parseTPS(raw) {
   if (!raw || isErrorResponse(raw)) return null;
@@ -195,12 +246,17 @@ app.get([`${api}/server-info`, `/api/server-info`], async (req, res) => {
     const players = parsePlayerList(listRaw);
 
     // 尝试获取版本（支持不同服务端）
-    let versionRaw = await tryCommand('version');
-    if (!versionRaw) versionRaw = await tryCommand('bukkit:version');
-    if (!versionRaw) versionRaw = await tryCommand('minecraft:version');
-    if (!versionRaw) versionRaw = await tryCommand('about');
+    let version = null;
+    for (const cmd of ['version', 'bukkit:version', 'minecraft:version', 'about']) {
+      version = parseVersion(await tryCommand(cmd));
+      if (version) break;
+    }
+    if (!version) {
+      // 命令不可用时，部分服务端在 list 响应里附带版本（如 Paper 的 "Server version: ..."）
+      version = parseVersion(listRaw);
+    }
 
-    // 尝试获取 TPS / MSPT（Paper/Spigot 专有）
+    // 尝试获取 TPS / MSPT（Paper/Spigot 专有）；Forge 用 /forge tps
     const tpsRaw = await tryCommand('tps');
     const tps = parseTPS(tpsRaw);
     const mspt = parseMSPT(tpsRaw);
@@ -211,6 +267,13 @@ app.get([`${api}/server-info`, `/api/server-info`], async (req, res) => {
     if (!modsRaw) modsRaw = await tryCommand('fabric mods');
     const mods = parseMods(modsRaw);
 
+    // 末路：Forge 没有 /version，改从 mod jar 文件名推断 MC 版本
+    let versionSource = version ? 'command' : undefined;
+    if (!version) {
+      version = parseVersionFromModFiles(modsRaw);
+      if (version) versionSource = 'modfiles';
+    }
+
     // 尝试获取世界种子
     const seedRaw = await tryCommand('seed');
     const seed = parseSeed(seedRaw);
@@ -218,14 +281,16 @@ app.get([`${api}/server-info`, `/api/server-info`], async (req, res) => {
     res.json({
       ok: true,
       players,
-      version: versionRaw || '未知',
+      version: version || '未知',
+      versionSource,
       tps: tps || undefined,
       mspt: mspt || undefined,
       mods: mods || undefined,
       seed: seed || undefined,
       raw: {
         list: listRaw,
-        version: versionRaw || undefined,
+        version: version || undefined,
+        versionSource,
         tps: tpsRaw || undefined,
         mods: modsRaw || undefined,
         seed: seedRaw || undefined,

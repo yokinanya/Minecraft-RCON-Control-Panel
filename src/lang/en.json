@@ -3,7 +3,6 @@
   "nav.items": "📦 Items",
   "nav.addItems": "➕ Add Items",
   "status.online": "● Online",
-
   "login.title": "Minecraft RCON",
   "login.subtitle": "Remote Server Management Console",
   "login.host": "Server Address",
@@ -12,10 +11,10 @@
   "login.portPlaceholder": "25575",
   "login.password": "RCON Password",
   "login.passwordPlaceholder": "Enter RCON password",
+  "login.remember": "Remember connection",
   "login.connect": "Connect",
   "login.success": "Connected successfully",
   "login.fail": "Connection failed",
-
   "serverInfo.title": "Server Info",
   "serverInfo.online": "Online",
   "serverInfo.players": "Online Players",
@@ -28,7 +27,6 @@
   "serverInfo.mods": "Loaded Mods",
   "serverInfo.noMods": "No mods detected",
   "serverInfo.playerList": "Player List",
-
   "console.cmdFmt": "> {cmd}",
   "console.entries": "entries",
   "console.clear": "Clear",
@@ -42,11 +40,9 @@
   "console.disconnected": "RCON disconnected",
   "console.disconnFail": "Disconnect failed",
   "console.infoRefreshed": "Server info refreshed.",
-
   "cmdLibrary.title": "Command Library",
   "cmdLibrary.search": "Search commands...",
   "cmdLibrary.noMatch": "No matching commands",
-
   "cmdDetail.permission": "Permission Level",
   "cmdDetail.syntax": "Syntax",
   "cmdDetail.params": "Parameters",
@@ -54,23 +50,20 @@
   "cmdDetail.insert": "Insert Command",
   "cmdDetail.optional": "optional",
   "cmdDetail.close": "Close",
-
   "cmdInput.placeholder": "Enter command, MC-style autocomplete supported...",
   "cmdInput.execute": "Send",
   "cmdInput.disconnect": "Disconnect",
   "cmdInput.paramHint": "Parameters",
   "cmdInput.cmdHint": "Commands",
-
   "items.vanilla": "Vanilla",
   "items.custom": "Custom",
-  "items.noCustom": "No custom items yet. Add some in the Add Items page.",
+  "items.noCustom": "No custom items yet. Click the button above to add.",
   "items.searchPlaceholder": "Search ID or name...",
   "items.id": "ID",
   "items.name": "Name",
   "items.idPlaceholder": "item_id",
   "items.noResults": "No matching items found",
   "items.count": "{count} items",
-
   "addItems.title": "Add Custom Items",
   "addItems.modName": "Mod Name",
   "addItems.modNamePlaceholder": "Enter mod name...",
@@ -84,18 +77,12 @@
   "addItems.saveFail": "Save failed",
   "addItems.duplicateMod": "This mod name already exists. Please use a different name.",
   "addItems.emptyWarn": "Please fill in mod name and at least one item",
-
-  "items.vanilla": "Vanilla",
-  "items.custom": "Custom",
   "items.addGroup": "Add Item Group",
   "items.modName": "Mod Name",
   "items.modNamePlaceholder": "Enter mod name, must be unique...",
-  "items.noCustom": "No custom items yet. Click the button above to add.",
   "items.addRow": "Add Row",
   "items.save": "Save",
   "items.cancel": "Cancel",
   "items.confirmDelete": "Are you sure you want to delete {mod} and all its items?",
-  "items.searchPlaceholder": "Search ID or name...",
-
   "language.label": "Language"
 }

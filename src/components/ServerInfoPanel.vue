@@ -1,6 +1,6 @@
 <template>
-  <div class="info-panel rounded-2xl border border-slate-700/60 bg-slate-900/70 p-5 backdrop-blur-xl shadow-xl shadow-slate-950/20">
-    <h2 class="flex items-center gap-2 text-base font-semibold text-slate-100">
+  <div class="info-panel flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-900/70 p-5 backdrop-blur-xl shadow-xl shadow-slate-950/20">
+    <h2 class="flex shrink-0 items-center gap-2 text-base font-semibold text-slate-100">
       <span class="text-cyan-400">🖥</span> {{ t('serverInfo.title') }}
       <span class="ml-auto flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-400">
         <span class="relative flex h-2 w-2">
@@ -11,7 +11,7 @@
       </span>
     </h2>
 
-    <div class="mt-4 space-y-3">
+    <div class="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
       <!-- 玩家数 -->
       <div class="flex flex-col gap-1.5">
         <div class="flex items-center justify-between text-xs">
@@ -58,10 +58,16 @@
         <span class="font-mono" :class="msptColorClass">{{ info.mspt }}ms</span>
       </div>
 
-      <!-- Mods（如果可用） -->
+      <!-- Mods（如果可用，默认折叠避免列表过长） -->
       <div v-if="info.mods && info.mods.length > 0" class="mt-3 border-t border-slate-700/50 pt-3">
-        <span class="text-xs font-medium text-slate-400">{{ t('serverInfo.mods') }} ({{ info.mods.length }})</span>
-        <div class="mt-2 flex max-h-[100px] flex-wrap gap-1.5 overflow-y-auto pr-1">
+        <button
+          @click="modsOpen = !modsOpen"
+          class="flex w-full items-center gap-1.5 text-xs font-medium text-slate-400 transition hover:text-slate-200"
+        >
+          <span class="text-[10px] transition-transform" :class="{ 'rotate-90': modsOpen }">▶</span>
+          {{ t('serverInfo.mods') }} ({{ info.mods.length }})
+        </button>
+        <div v-show="modsOpen" class="mt-2 flex flex-wrap gap-1.5">
           <span
             v-for="mod in info.mods"
             :key="mod"
@@ -76,7 +82,7 @@
       <!-- 在线玩家列表 -->
       <div v-if="info.players?.names?.length" class="mt-3 border-t border-slate-700/50 pt-3">
         <span class="text-xs font-medium text-slate-400">{{ t('serverInfo.playerList') }}</span>
-        <div class="mt-2 flex max-h-[120px] flex-wrap gap-1.5 overflow-y-auto pr-1">
+        <div class="mt-2 flex flex-wrap gap-1.5">
           <span
             v-for="name in info.players.names"
             :key="name"
@@ -91,7 +97,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType } from 'vue';
+import { computed, defineComponent, PropType, ref } from 'vue';
 import { t } from '../i18n';
 
 interface PlayerInfo {
@@ -116,6 +122,8 @@ export default defineComponent({
     info: { type: Object as PropType<ServerInfo>, required: true },
   },
   setup(props) {
+    const modsOpen = ref(false);
+
     const playerPercentage = computed(() => {
       const p = props.info.players;
       if (!p || p.max === 0) return 0;
@@ -145,13 +153,13 @@ export default defineComponent({
       if (!seed) return '#';
       // 兜底：如果 seed 含有 "Seed: [...]" 前缀，提取纯数字
       const seedNum = String(seed).match(/(-?\d+)/)?.[1] || seed;
-      const version = props.info.version || '';
-      const mcMatch = version.match(/(\d+\.\d+(?:\.\d+)?)/);
-      const platform = mcMatch ? `java_${mcMatch[1]}` : 'java_1.21.1';
+      const mcMatch = String(props.info.version || '').match(/(\d+\.\d+(?:\.\d+)?)/);
+      // 版本未知时不猜平台版本，交给种子地图站点使用默认值
+      const platform = mcMatch ? `java_${mcMatch[1]}` : 'java';
       return `https://minecraftsearch.com/zh-CN/%E5%B7%A5%E5%85%B7/%E7%A7%8D%E5%AD%90%E5%9C%B0%E5%9B%BE#seed=${seedNum}&platform=${platform}&dimension=overworld&x=0&z=0&zoom=13`;
     });
 
-    return { playerPercentage, tpsColorClass, msptColorClass, seedMapUrl, t };
+    return { playerPercentage, tpsColorClass, msptColorClass, seedMapUrl, modsOpen, t };
   },
 });
 </script>

@@ -1,6 +1,6 @@
 <template>
-  <div class="console-panel flex flex-col rounded-2xl border border-slate-700/60 bg-slate-900/70 backdrop-blur-xl shadow-xl shadow-slate-950/20 h-full">
-    <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-700/40">
+  <div class="console-panel flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-900/70 backdrop-blur-xl shadow-xl shadow-slate-950/20">
+    <div class="flex shrink-0 items-center justify-between border-b border-slate-700/40 px-5 py-3.5">
       <h2 class="flex items-center gap-2 text-base font-semibold text-slate-100">
         <span class="text-cyan-400">▸</span> {{ t('nav.console') }}
       </h2>
@@ -19,7 +19,7 @@
 
     <div
       ref="consoleBody"
-      class="console-body flex-1 overflow-y-auto p-4 font-mono text-[13px] leading-relaxed"
+      class="console-body min-h-0 flex-1 overflow-y-auto p-4 font-mono text-[13px] leading-relaxed"
     >
       <div v-if="logs.length === 0" class="flex h-full items-center justify-center text-slate-600">
         <div class="text-center">
@@ -29,7 +29,7 @@
       </div>
 
       <div v-for="(item, index) in logs" :key="index" class="console-line group">
-        <span class="select-none text-[10px] text-slate-600 mr-2 opacity-0 group-hover:opacity-100 transition-opacity">{{ item.time }}</span>
+        <span class="select-none text-[10px] tabular-nums text-slate-600 mr-2">{{ item.time }}</span>
         <span v-if="item.type === 'send'" class="text-amber-400/90">&gt; </span>
         <span v-if="item.type === 'error'" class="text-rose-400/90">✕ </span>
         <span :class="lineClass(item)">{{ item.text }}</span>
