@@ -38,8 +38,24 @@ npm start
 ```
 
 开发模式下：
-- 后端运行在 `http://localhost:8080`
-- 前端 Vite 开发服务器运行在 `http://localhost:5173`，API 请求自动代理到后端
+- 后端运行在 `http://localhost:7000`（由 `PORT` 决定）
+- 前端 Vite 开发服务器运行在 `http://localhost:5173`，`/api` 请求自动代理到后端
+
+一键启动（脚本自动构建，首次还会安装依赖）：
+
+```bash
+bash start.sh                  # 默认 7000 端口、根路径
+PORT=8080 bash start.sh        # 改端口
+BASE_PATH=mcrcon bash start.sh # 部署在 /mcrcon/ 子路径
+```
+
+- `BASE_PATH`：子路径名（不带斜杠），构建与运行必须一致；默认根路径。
+- `NODE_HOME`：`PATH` 里找不到 node 时手动指定，如 `NODE_HOME=/opt/node bash start.sh`。
+- 面板（MCSManager 等）按空格解析命令，需写成 `env PORT=8080 BASE_PATH=mcrcon bash start.sh`。
+
+反代到 `127.0.0.1:7000` 即可，`proxy_pass` 保留或剥离子路径前缀均支持。
+
+背景图可选：放到 `data/custom/background.png`，没有则使用内置渐变（不随仓库分发）。
 
 ## 使用说明
 
